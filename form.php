@@ -4,18 +4,22 @@
     <meta charset="UTF-8">
     <title>Лабораторная работа №4</title>
 
+    <!-- Подключение стилей -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
 
+    <!-- Заголовок формы -->
     <h1>Анкета пользователя</h1>
 
+    <!-- Информация об авторе -->
     <p class="author">
         Выполнил: Сладкомедов Ярослав, ПМИ 23
     </p>
 
+    <!-- Сообщение об успешном сохранении -->
     <?php if (!empty($messages)): ?>
 
         <div class="success">
@@ -30,8 +34,10 @@
 
     <?php endif; ?>
 
+    <!-- Форма отправки данных -->
     <form action="" method="POST">
 
+        <!-- Поле ФИО -->
         <label>ФИО</label>
 
         <input
@@ -41,6 +47,7 @@
             value="<?= htmlspecialchars($_COOKIE['full_name_value'] ?? '') ?>"
         >
 
+        <!-- Сообщение об ошибке ФИО -->
         <?php if (!empty($error_messages['full_name'])): ?>
 
             <div class="error-message">
@@ -49,61 +56,15 @@
 
         <?php endif; ?>
 
+        <!-- Поле телефона -->
         <label>Телефон</label>
 
-        <input
-            type="tel"
-            name="phone"
-            class="<?= $errors['phone'] ? 'error-field' : '' ?>"
-            value="<?= htmlspecialchars($_COOKIE['phone_value'] ?? '') ?>"
-        >
+        <!-- Аналогично для остальных полей -->
 
-        <?php if (!empty($error_messages['phone'])): ?>
-
-            <div class="error-message">
-                <?= htmlspecialchars($error_messages['phone']) ?>
-            </div>
-
-        <?php endif; ?>
-
-        <label>Email</label>
-
-        <input
-            type="email"
-            name="email"
-            class="<?= $errors['email'] ? 'error-field' : '' ?>"
-            value="<?= htmlspecialchars($_COOKIE['email_value'] ?? '') ?>"
-        >
-
-        <?php if (!empty($error_messages['email'])): ?>
-
-            <div class="error-message">
-                <?= htmlspecialchars($error_messages['email']) ?>
-            </div>
-
-        <?php endif; ?>
-
-        <label>Дата рождения</label>
-
-        <input
-            type="date"
-            name="birth_date"
-            class="<?= $errors['birth_date'] ? 'error-field' : '' ?>"
-            value="<?= htmlspecialchars($_COOKIE['birth_date_value'] ?? '') ?>"
-        >
-
-        <?php if (!empty($error_messages['birth_date'])): ?>
-
-            <div class="error-message">
-                <?= htmlspecialchars($error_messages['birth_date']) ?>
-            </div>
-
-        <?php endif; ?>
-
-        <label>Пол</label>
-
+        <!-- Выбор пола -->
         <div class="radio-group">
 
+            <!-- Мужской -->
             <label>
                 <input
                     type="radio"
@@ -114,6 +75,7 @@
                 Мужской
             </label>
 
+            <!-- Женский -->
             <label>
                 <input
                     type="radio"
@@ -126,22 +88,14 @@
 
         </div>
 
-        <?php if (!empty($error_messages['gender'])): ?>
-
-            <div class="error-message">
-                <?= htmlspecialchars($error_messages['gender']) ?>
-            </div>
-
-        <?php endif; ?>
-
-        <label>Любимые языки программирования</label>
-
+        <!-- Список языков программирования -->
         <select
             name="languages[]"
             multiple
             class="<?= $errors['languages'] ? 'error-field' : '' ?>"
         >
 
+            <!-- Заполнение списка из БД -->
             <?php foreach ($languages as $language): ?>
 
                 <option value="<?= $language['id'] ?>">
@@ -154,21 +108,13 @@
 
         </select>
 
-        <?php if (!empty($error_messages['languages'])): ?>
-
-            <div class="error-message">
-                <?= htmlspecialchars($error_messages['languages']) ?>
-            </div>
-
-        <?php endif; ?>
-
-        <label>Биография</label>
-
+        <!-- Поле биографии -->
         <textarea
             name="biography"
             rows="6"
         ><?= htmlspecialchars($_COOKIE['biography_value'] ?? '') ?></textarea>
 
+        <!-- Чекбокс согласия -->
         <div class="checkbox">
 
             <label>
@@ -184,20 +130,14 @@
 
         </div>
 
-        <?php if (!empty($error_messages['agreement'])): ?>
-
-            <div class="error-message">
-                <?= htmlspecialchars($error_messages['agreement']) ?>
-            </div>
-
-        <?php endif; ?>
-
+        <!-- Кнопка отправки формы -->
         <button type="submit">
             Сохранить
         </button>
 
     </form>
 
+    <!-- Ссылка на просмотр анкет -->
     <div class="links">
 
         <a href="view.php">

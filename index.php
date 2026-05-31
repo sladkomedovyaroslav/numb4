@@ -1,16 +1,21 @@
 <?php
 
+// Подключение файла для работы с БД
 require 'db.php';
 
+// Подключение к базе данных
 $pdo = connectDB();
 
+// Получение списка языков программирования для формы
 $stmt = $pdo->query("SELECT * FROM programming_languages ORDER BY name");
 $languages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Обработка GET-запроса (отображение формы)
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     $messages = [];
 
+    // Сообщение об успешном сохранении
     if (!empty($_COOKIE['save'])) {
 
         setcookie('save', '', 100000);
@@ -18,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $messages[] = 'Данные успешно сохранены.';
     }
 
+    // Проверка наличия ошибок в Cookies
     $errors = [
         'full_name' => !empty($_COOKIE['full_name_error']),
         'phone' => !empty($_COOKIE['phone_error']),
@@ -30,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     $error_messages = [];
 
+    // Получение текста ошибок и удаление Cookies после чтения
     if ($errors['full_name']) {
         $error_messages['full_name'] = $_COOKIE['full_name_error'];
         setcookie('full_name_error', '', time() - 3600);
@@ -65,10 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         setcookie('agreement_error', '', time() - 3600);
     }
 
+    // Подключение HTML-формы
     include 'form.php';
     exit();
 }
 
+// Получение данных из формы
 $full_name = trim($_POST['full_name'] ?? '');
 $phone = trim($_POST['phone'] ?? '');
 $email = trim($_POST['email'] ?? '');
@@ -80,6 +89,7 @@ $selected_languages = $_POST['languages'] ?? [];
 
 $hasErrors = false;
 
+// Проверка ФИО
 if (empty($full_name) || !preg_match('/^[а-яА-Яa-zA-Z\s\-]+$/u', $full_name)) {
 
     setcookie(
@@ -91,6 +101,7 @@ if (empty($full_name) || !preg_match('/^[а-яА-Яa-zA-Z\s\-]+$/u', $full_name)
     $hasErrors = true;
 }
 
+// Проверка телефона
 if (empty($phone) || !preg_match('/^[\d\s\-\+\(\)]+$/', $phone)) {
 
     setcookie(
@@ -102,6 +113,7 @@ if (empty($phone) || !preg_match('/^[\d\s\-\+\(\)]+$/', $phone)) {
     $hasErrors = true;
 }
 
+// Проверка email
 if (empty($email) || !preg_match('/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/', $email)) {
 
     setcookie(
@@ -113,6 +125,7 @@ if (empty($email) || !preg_match('/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2
     $hasErrors = true;
 }
 
+// Проверка даты рождения
 if (empty($birth_date)) {
 
     setcookie(
@@ -124,6 +137,7 @@ if (empty($birth_date)) {
     $hasErrors = true;
 }
 
+// Проверка пола
 if (!in_array($gender, ['male', 'female'])) {
 
     setcookie(
@@ -135,6 +149,7 @@ if (!in_array($gender, ['male', 'female'])) {
     $hasErrors = true;
 }
 
+// Проверка выбора языков
 if (empty($selected_languages)) {
 
     setcookie(
@@ -146,6 +161,7 @@ if (empty($selected_languages)) {
     $hasErrors = true;
 }
 
+// Проверка согласия
 if (!$agreement) {
 
     setcookie(
@@ -157,6 +173,7 @@ if (!$agreement) {
     $hasErrors = true;
 }
 
+// Сохранение введённых значений на 1 год
 setcookie('full_name_value', $full_name, time() + 60 * 60 * 24 * 365);
 setcookie('phone_value', $phone, time() + 60 * 60 * 24 * 365);
 setcookie('email_value', $email, time() + 60 * 60 * 24 * 365);
@@ -164,6 +181,7 @@ setcookie('birth_date_value', $birth_date, time() + 60 * 60 * 24 * 365);
 setcookie('gender_value', $gender, time() + 60 * 60 * 24 * 365);
 setcookie('biography_value', $biography, time() + 60 * 60 * 24 * 365);
 
+// Если есть ошибки — возврат к форме
 if ($hasErrors) {
 
     header('Location: index.php');
@@ -172,8 +190,10 @@ if ($hasErrors) {
 
 try {
 
+    // Начало транзакции
     $pdo->beginTransaction();
 
+    // Сохранение основной анкеты
     $stmt = $pdo->prepare("
         INSERT INTO applications
         (full_name, phone, email, birth_date, gender, biography, agreement)
@@ -190,14 +210,17 @@ try {
         $agreement ? 1 : 0
     ]);
 
+    // Получение ID новой записи
     $application_id = $pdo->lastInsertId();
 
+    // Подготовка запроса для языков
     $stmt = $pdo->prepare("
         INSERT INTO application_languages
         (application_id, language_id)
         VALUES (?, ?)
     ");
 
+    // Сохранение выбранных языков
     foreach ($selected_languages as $language_id) {
 
         $stmt->execute([
@@ -206,6 +229,7 @@ try {
         ]);
     }
 
+    // Подтверждение транзакции
     $pdo->commit();
 
 } catch (Exception $e) {
@@ -213,8 +237,10 @@ try {
     die('Ошибка: ' . $e->getMessage());
 }
 
+// Cookie для сообщения об успехе
 setcookie('save', '1');
 
+// Перенаправление после сохранения
 header('Location: index.php');
 exit();
 ?>
